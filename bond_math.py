@@ -4,6 +4,13 @@ bond_math.py --> core bond pricing and risk analytics from scratch.
 
 Functions: 
 bond_price
+ytm_from_price
+macaulay_duration
+modified_duration
+convexity
+dv01
+price_change
+bond_summary
 '''
 
 import numpy as np
