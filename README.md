@@ -17,7 +17,7 @@ pip install -r requirements.txt
 Get your FRED API key at https://fred.stlouisfed.org/docs/api/api_key.html
 
 ```bash
-export FRED_API_KEY = "your key here"
+export fred_api_key = "your key here"
 ```
 
 ### 3. Quick start
@@ -39,4 +39,3 @@ DV01: 0.073
 +100bp move: 893.759(-67.632)
 -100bp move: 1034.646(+73.255)
 ```
-
