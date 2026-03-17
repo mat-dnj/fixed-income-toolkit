@@ -55,5 +55,5 @@ def test_longer_bond_more_risk():
     assert dv01(1000, 0.045, 30, 0.05, freq=2) > dv01(1000, 0.045, 2, 0.05, freq=2)
 
 
-# TODO: test convexity more thoroughly — not sure I fully understand the formula yet, just know the output should be positive
+# TODO: come back and better test convexity, not sure I fully understand the formula yet, just know the output should be positive
 # also have to figure out how to handle accrued interest, cause all prices assume we're on a coupon date which is never true in real life
