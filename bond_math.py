@@ -20,13 +20,13 @@ def bond_price(face, coupon, maturity, ytm, freq=2):
     """
     price a fixed coupon bond by discounting all future cash flows
     """
-    n = int(maturity*freq)
-    c = coupon /  face * freq
+    n_periods = int(maturity*freq)
+    c_payments = coupon /  face * freq
     r = ytm / freq
 
-    pv_coupons = sum(c/(1+r)** t for t in range (1, n+1))
+    pv_coupons = sum(c_payments/(1+r)** t for t in range (1, n_periods+1))
 
-    pv_face = face / (1+r)**n
+    pv_face = face / (1+r)**n_periods
     return pv_coupons+pv_face
 
 
@@ -45,16 +45,16 @@ def ytm_from_price (market_price, face, coupon, maturity, ytm, freq=2):
 
 def macaulay_duration(face, coupon, maturity, ytm, freq=2):
     """
-    weigthed average time to receive all cash flows
+    weigthed average time to receive all of the cash flows
     """
-    n = int(maturity*freq)
-    c = face * coupon / freq
+    n_periods = int(maturity*freq)
+    c_payments = face * coupon / freq
     r = ytm / freq 
-    p = bond_price(face, coupon, maturity, ytm, freq)
+    price = bond_price(face, coupon, maturity, ytm, freq)
 
-    weighted_cf = sum((t / freq) * (c/(1+r)**t) for t in range(1, n+1))
-    weighted_cf += (face / (1+r)**n)
-    return weighted_cf / p
+    weighted_cf = sum((t / freq) * (c_payments/(1+r)**t) for t in range(1, n_periods+1))
+    weighted_cf += (face / (1+r)**n_periods)
+    return weighted_cf / price
 
 
 def modified_duration(face, coupon, maturity, ytm, freq=2):
@@ -71,14 +71,14 @@ def convexity(face, coupon, maturity, ytm, freq=2):
     Curvature in the price/yield relationship
     Gives linear approximation of prices changes.
     """
-    n = int(maturity*freq)
-    c = face*coupon
+    n_periods = int(maturity*freq)
+    c_payments = face*coupon
     r = ytm/freq
     p = bond_price(face, coupon, maturity, ytm,freq)
 
     cx = 0.0
-    for t in range(1, n+1):
-        cf = c if t<n else c+face
+    for t in range(1, n_periods+1):
+        cf = c_payments if t<n_periods else c_payments+face
         cx += (t*(t+1) / freq**2) * cf / (1+r)**t 
         return cx / (p*(1+r)**2)
 
@@ -100,18 +100,18 @@ def price_change(face, coupon, maturity, ytm, dy, freq=-2):
     Duration--> main driver for small moves,
     Convexity --> becomes significant for larger yield moves
     """
-    p = bond_price(face, coupon, maturity, ytm, freq)
+    price = bond_price(face, coupon, maturity, ytm, freq)
     mod_duration = modified_duration(face, coupon, maturity,  ytm, freq)
     conv = convexity(face, coupon, maturity, ytm, freq)
 
-    duration_effect = -mod_duration * p * dy
-    convexity_effect = 1/2 * (conv*p) * dy**2
+    duration_effect = -mod_duration * price * dy
+    convexity_effect = 1/2 * (conv*price) * dy**2
 
-    approx_new_price = p + duration_effect + convexity_effect
+    approx_new_price = price + duration_effect + convexity_effect
     actual_new_price = bond_price(face, coupon, maturity, ytm + dy, freq)
 
     return {
-        'original price': p,
+        'original price': price,
         'duration_effect': duration_effect,
         'convexity_effect': convexity_effect,
         'approx_new_price': approx_new_price,
@@ -123,7 +123,7 @@ def bond_summary(face, coupon, maturity, ytm, freq=2):
     """
     Print full risk metric summary for a bond
     """
-    p = bond_price(face, coupon, maturity, ytm, freq)
+    price = bond_price(face, coupon, maturity, ytm, freq)
     mac_duration = macaulay_duration(face, coupon, maturity, ytm, freq)
     mod_duration = modified_duration(face, coupon, maturity, ytm, freq)
     conv = convexity(face, coupon, maturity, ytm, freq)
@@ -134,13 +134,18 @@ def bond_summary(face, coupon, maturity, ytm, freq=2):
     shift_down = price_change(face, coupon, maturity, ytm, 0.01, freq)
 
     print(f'Bond Summary: {coupon*100:.2f}%Coupon, {maturity}Y, {ytm*100:2f}%YTM')
-    print(f'Price: {p:.3f}')
+    print(f'Price: {price:.3f}')
     print(f'Macaulay Duration: {mac_duration:.3f}')
     print(f'Modified Duration {mod_duration:.3f}')
     print(f'Convexity: {conv:.3f}')
     print(f'DV01: {dv:.3f}')
     print('-'*27)
-    print(f'+100bp move: {shift_up['actual_new_price']:.3f}'
-          f'({shift_up['actual_new_price']-p:.3f})')
-    print(f'-100bp move: {shift_down['actual_new_price']:.3f}'
-          f'({shift_down['actual_new_price']-p:.3f})')
+    print(f"+100bp move: {shift_up['actual_new_price']:.3f}"
+          f"({shift_up['actual_new_price']-price:.3f})")
+    print(f"-100bp move: {shift_down['actual_new_price']:.3f}"
+          f"({shift_down['actual_new_price']-price:.3f})")
+
+
+# next: clean and optmize module, 
+# need to figure out how to use these DV01s to size a trade
+# if I want to go long 10Y and short 2Y, how much of each?

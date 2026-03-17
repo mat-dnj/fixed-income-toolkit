@@ -2,7 +2,9 @@
 Basic Bond math library and FRED integration for US Treasury data. 
 This is part of a broader fixed income library I am actually building.
 
-**Part 2 will add yield curve PCA with level, slope and curvature decomposition, relative value signals and DV01 neutral trade construction.**
+_Part 2 will add yield curve PCA with level, slope and curvature decomposition, relative value signals and DV01 neutral trade construction._
+
+## Part I
 
 ### 1. Modules
 
@@ -39,3 +41,9 @@ DV01: 0.073
 +100bp move: 893.759(-67.632)
 -100bp move: 1034.646(+73.255)
 ```
+
+## Part II - work in progress
+* PCA on yield curve --> level / slope / curvature
+* Z-score to find when 2 tenirs are mispriced vs each other
+* DV01-neutral trade construction (how to size the long and the short legs)
+* backtesting the strategy on historical data
