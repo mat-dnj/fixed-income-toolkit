@@ -12,6 +12,7 @@ def test_par_bond():
 
 
 def test_frequency_impact():
+    # Annual vs Semi annual compounding give diferent prices.
     annual = bond_price(1000, 0.05, 10, 0.05, freq=1)
     semi_ann = bond_price(1000, 0.05, 10, 0.05, freq=2)
     assert annual!= semi_ann

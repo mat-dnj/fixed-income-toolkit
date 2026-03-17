@@ -19,7 +19,7 @@ pip install -r requirements.txt
 Get your FRED API key at https://fred.stlouisfed.org/docs/api/api_key.html
 
 ```bash
-export fred_api_key = "your key here"
+export fred_api_key="your key here"
 ```
 
 ### 3. Quick start
@@ -31,15 +31,16 @@ bond_summary(face=1000, coupon=0.045, maturity=10, ytm=0.05)
 ```
 
 ```
-Bond Summary: 4.50%Coupon, 10Y, 5.0%YTM
-Price: 961.391
-Macaulay Duration: 7.919
-Modified Duration 7.542
-Convexity: 68.818
-DV01: 0.073
+Bond Summary: 4.50% Coupon, 10Y, 5.00% YTM
 ---------------------------
-+100bp move: 893.759(-67.632)
--100bp move: 1034.646(+73.255)
+  Price:                 961.027
+  Macaulay Duration:       8.117
+  Modified Duration        7.919
+  Convexity:              75.300
+  DV01:                    0.761
+---------------------------
+  +100bp move: 888.419  (-72.608)
+  -100bp move: 1040.879  (79.851)
 ```
 
 ## Part II - work in progress

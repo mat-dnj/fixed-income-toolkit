@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 treasury_series = {
     '1M': 'DGS1MO',
     '3M': 'DGS3MO',
-    '6M': 'DGS61MO',
+    '6M': 'DGS6MO',
     '1Y': 'DGS1',
     '2Y': 'DGS2',
     '3Y': 'DGS3',
@@ -51,7 +51,7 @@ def get_treasury_curve(start='2019-01-01', end=None, api_key=None):
     print('downloading treasury yield from Fred...')
     all_series = {}
     for maturity, series_id in treasury_series.items():
-        print(f'{maturity}', end='', flush=True)
+        print(f' {maturity}', end='', flush=True)
 
         params = {
             'series_id': series_id,
@@ -66,8 +66,7 @@ def get_treasury_curve(start='2019-01-01', end=None, api_key=None):
             print(f'error fetching the {series_id}: status {response.status_code}')
             continue
 
-        observations = response.json()['observations']
-
+        observations = response.json().get('observations', [])
         data = {
             obs['date']: float(obs['value'])
             for obs in observations
@@ -77,15 +76,14 @@ def get_treasury_curve(start='2019-01-01', end=None, api_key=None):
         s = pd.Series(data, dtype=float)
         s.index = pd.to_datetime(s.index)
         all_series[maturity] = s.sort_index()
-
-    print()
+        print()
 
     curve = pd.DataFrame(all_series)
 
     # make colum order go from short to long maturity
     ordered = ['1M', '3M', '6M', '1Y', '2Y', '3Y', '5Y','7Y', '10Y', '20Y', '30Y']
     curve = curve[[c for c in ordered if c in curve.columns]] # this line check if specific maturity exists and add it to the dataframe, otherwise it skips it
-    curve.index.name('date')
+    curve.index.name = 'date'
 
     print(f'Got {len(curve)} trading days from {curve.index[0].date()} to {curve.index[1].date()}')
     return curve
@@ -97,7 +95,7 @@ def get_latest_yields(api_key=None):
     use this to quickly check the curve or to price a bond
     """
     api_key= get_api_key(api_key)
-    start = (datetime.today-timedelta(days=10)).strftime('%Y-%m-%d') # look back 10days to make sure we hit a working business day 
+    start = (datetime.today()-timedelta(days=10)).strftime('%Y-%m-%d') # look back 10days to make sure we hit a working business day 
     end = datetime.today().strftime('%Y-%m-%d')
 
     curve = get_treasury_curve(start=start, end=end, api_key=api_key)
