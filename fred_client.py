@@ -8,6 +8,7 @@ import requests
 import pandas as pd
 from datetime import datetime, timedelta
 
+
 # Fred series ID for each treasury maturity
 treasury_series = {
     '1M': 'DGS1MO',
@@ -23,7 +24,9 @@ treasury_series = {
     '30Y': 'DGS30',
 }
 
+
 fred_url = "https://api.stlouisfed.org/fred/series/observations"
+
 
 def _get_api_key(api_key):
     """
@@ -37,6 +40,7 @@ def _get_api_key(api_key):
             'then run: export fred_api_key = "enter your key here"'
         )
     return key
+
 
 def _fetch_series(series_id, start, end, api_key):
     """
@@ -64,3 +68,56 @@ def _fetch_series(series_id, start, end, api_key):
     s.index = pd.to_datetime(s.index)
     return s.sort_index()
 
+
+def get_treasury_curve(start='2019-01-01', end=None, api_key=None):
+    """
+    downlad full UST yield curve from fred and returns a dataframe where each row is a trading day and each col is a maturity
+    """
+    api_key = _get_api_key(api_key)
+    end = end or datetime.today().strftime('%Y-%m-%d')
+    
+    print('downloading treasury yield from Fred...')
+    all_series = {}
+    for maturity, series_id in treasury_series.items():
+        print(f'{maturity}', end='', flush=True)
+        all_series[maturity] = _fetch_series(series_id, start, end, api_key)
+
+    curve = pd.DataFrame(all_series)
+
+    # make colum order go from short to long maturity
+    order_cols = ['1M', '3M', '6M', '1Y', '2Y', '3Y', '5Y','7Y', '10Y', '20Y', '30Y']
+    curve = curve[[c for c in order_cols if c in curve.columns]] # check if specific maturity exists and add it to the dataframe, otherwise skips it.
+    curve.index.name('date')
+
+    print(f'Got {len(curve)} trading days from {curve.index[0].date()} to {curve.index[1].date()}')
+    return curve
+
+
+def get_latest_yields(api_key=None):
+    """
+    get the most recent available Treasury yield curve and returns a pandas Series. 
+    use this to quickly check the curve or to price a bond
+    """
+    api_key=_get_api_key(api_key)
+    start = (datetime.today-timedelta(days=10)).strftime('%Y-%m-%d') # look back 10days to make sure we hit a working business day 
+    end = datetime.today().strftime('%Y-%m-%d')
+
+    curve = get_treasury_curve(start=start, end=end, api_key=api_key)
+    latest = curve.dropna(how='all').iloc[-1]
+
+    print(f'latest Treasury yield ({latest.name.date()}):')
+    for maturity, yield_values in latest.dropna().items():
+        print(f'{maturity:} {yield_values:.3f}%')
+
+    return latest
+
+def get_curve_spreads(curve):
+    """
+    computes standards treasury yeild curve spread indicators
+    2s10s / 3m10y / 5s30s
+    """
+    spreads = pd.DataFrame(index = curve.index)
+    spreads['2s10s'] = (curve['10Y'] - curve['2Y']) * 100
+    spreads['3m10y'] = (curve['10Y'] - curve['3M']) * 100
+    spreads['5s30s'] = (curve['30Y'] - curve['5Y']) * 100
+    return spreads.dropna()

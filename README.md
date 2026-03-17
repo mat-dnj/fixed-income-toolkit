@@ -6,9 +6,9 @@ This is part of a broader fixed income library I am actually building.
 
 ### 1. Modules
 
-`fred_client.py` --> Pull live treasury yields from FRED API 
-`bond_math.py` --> Price bonds, compute duration, convexity, DV01
-`test_bond_math.py` --> tests covering every function
+* `fred_client.py` --> Pull live treasury yields from FRED API 
+* `bond_math.py` --> Price bonds, compute duration, convexity, DV01
+* `test_bond_math.py` --> tests covering every function
 
 ### 2. Setup 
 ```bash
