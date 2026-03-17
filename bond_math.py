@@ -1,6 +1,6 @@
 ''' 
-bond_math.py --> core bond pricing and risk analytics from scratch.
-------
+bond_math.py
+module created to price bonds, compute duration, convexity, DV01.
 
 Functions: 
 bond_price
